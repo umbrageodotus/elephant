@@ -388,6 +388,17 @@ func mossIsActive() bool {
 	return err == nil
 }
 
+// nixProfilesDirs are the directories Nix rewrites on every generation change:
+// a new generation link is created and the profile symlink swapped, which is
+// our signal that the atomically-swapped applications dir needs a rescan (same
+// problem as moss replacing /usr). The system path covers NixOS and
+// home-manager run as a NixOS module; the per-user path covers standalone
+// home-manager. Only the ones that exist are watched.
+var nixProfilesDirs = []string{
+	"/nix/var/nix/profiles",
+	filepath.Join(xdg.StateHome, "nix", "profiles"),
+}
+
 // reinitializeWatcher tears down the current watcher and rebuilds it from scratch.
 // Needed after moss atomically replaces /usr, which invalidates existing inotify watches.
 func reinitializeWatcher() {
